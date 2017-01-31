@@ -1,0 +1,128 @@
+SET @OLD_UNIQUE_CHECKS=@@UNIQUE_CHECKS, UNIQUE_CHECKS=0;
+SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0;
+SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='TRADITIONAL,ALLOW_INVALID_DATES';
+
+CREATE SCHEMA IF NOT EXISTS `mydb` DEFAULT CHARACTER SET utf8 COLLATE utf8_general_ci ;
+USE `mydb` ;
+
+-- -----------------------------------------------------
+-- Table `mydb`.`UserDetail`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `mydb`.`UserDetail` (
+  `idUserDetail` INT NOT NULL AUTO_INCREMENT,
+  `FirstName` VARCHAR(100) NOT NULL,
+  `LastName` VARCHAR(100) NOT NULL,
+  `EMail` VARCHAR(100) NOT NULL,
+  `UserName` VARCHAR(45) NOT NULL,
+  `Password` VARCHAR(45) NOT NULL,
+  PRIMARY KEY (`idUserDetail`))
+ENGINE = InnoDB;
+
+
+-- -----------------------------------------------------
+-- Table `mydb`.`TagDetail`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `mydb`.`TagDetail` (
+  `idTagDetail` INT NOT NULL AUTO_INCREMENT,
+  `TagName` VARCHAR(100) NOT NULL,
+  `Description` VARCHAR(100) NOT NULL,
+  PRIMARY KEY (`idTagDetail`))
+ENGINE = InnoDB;
+
+
+-- -----------------------------------------------------
+-- Table `mydb`.`Domain`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `mydb`.`Domain` (
+  `idDomain` INT NOT NULL AUTO_INCREMENT,
+  `idUserDetail` INT NOT NULL,
+  `Domain` VARCHAR(500) NOT NULL,
+  PRIMARY KEY (`idDomain`),
+  INDEX `idUserDetail_idx` (`idUserDetail` ASC),
+  CONSTRAINT `idUserDetail`
+    FOREIGN KEY (`idUserDetail`)
+    REFERENCES `mydb`.`UserDetail` (`idUserDetail`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
+ENGINE = InnoDB;
+
+
+-- -----------------------------------------------------
+-- Table `mydb`.`PathDetail`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `mydb`.`PathDetail` (
+  `idPathDetail` INT NOT NULL AUTO_INCREMENT,
+  `idDomain` INT NOT NULL,
+  `Path` VARCHAR(500) NOT NULL,
+  PRIMARY KEY (`idPathDetail`),
+  INDEX `idDomain_idx` (`idDomain` ASC),
+  CONSTRAINT `idDomain`
+    FOREIGN KEY (`idDomain`)
+    REFERENCES `mydb`.`Domain` (`idDomain`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
+ENGINE = InnoDB;
+
+
+-- -----------------------------------------------------
+-- Table `mydb`.`ErrorSummary`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `mydb`.`ErrorSummary` (
+  `idErrorSummary` INT NOT NULL AUTO_INCREMENT,
+  `idPathDetail` INT NOT NULL,
+  `DateTime` DATETIME NOT NULL,
+  `Image` LONGBLOB NULL,
+  `WordCount` INT NOT NULL,
+  PRIMARY KEY (`idErrorSummary`),
+  INDEX `idPathDetail_idx` (`idPathDetail` ASC),
+  CONSTRAINT `idPathDetail`
+    FOREIGN KEY (`idPathDetail`)
+    REFERENCES `mydb`.`PathDetail` (`idPathDetail`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
+ENGINE = InnoDB;
+
+
+-- -----------------------------------------------------
+-- Table `mydb`.`ErrorDetail`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `mydb`.`ErrorDetail` (
+  `idErrorDetail` INT NOT NULL,
+  `idTagDetail` INT NOT NULL,
+  `RawNo` INT NULL,
+  `ErrorName` VARCHAR(100) NULL,
+  PRIMARY KEY (`idErrorDetail`),
+  INDEX `idTagDetail_idx` (`idTagDetail` ASC),
+  CONSTRAINT `idTagDetail`
+    FOREIGN KEY (`idTagDetail`)
+    REFERENCES `mydb`.`TagDetail` (`idTagDetail`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
+ENGINE = InnoDB;
+
+
+-- -----------------------------------------------------
+-- Table `mydb`.`ErrorDetailhasErrorSummary`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `mydb`.`ErrorDetailhasErrorSummary` (
+  `idErrorDetail` INT NOT NULL,
+  `idErrorSummary` INT NOT NULL,
+  PRIMARY KEY (`idErrorDetail`, `idErrorSummary`),
+  INDEX `fk_ErrorDetail_has_ErrorSummary_ErrorSummary1_idx` (`idErrorSummary` ASC),
+  INDEX `fk_ErrorDetail_has_ErrorSummary_ErrorDetail1_idx` (`idErrorDetail` ASC),
+  CONSTRAINT `idErrorDetail`
+    FOREIGN KEY (`idErrorDetail`)
+    REFERENCES `mydb`.`ErrorDetail` (`idErrorDetail`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `idErrorSummary`
+    FOREIGN KEY (`idErrorSummary`)
+    REFERENCES `mydb`.`ErrorSummary` (`idErrorSummary`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
+ENGINE = InnoDB;
+
+
+SET SQL_MODE=@OLD_SQL_MODE;
+SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS;
+SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS;
